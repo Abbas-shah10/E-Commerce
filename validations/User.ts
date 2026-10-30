@@ -11,4 +11,11 @@ export const userValidationSchema = z.object({
   role: z.enum(["user", "admin"]).default("user"),
 });
 
+export const signUpSchema = z.object({
+  username: z.string().min(2),
+  email: z.string().email(),
+  password: z.string().min(8),
+  role: z.enum(["user", "admin"]).default("user"),
+});
+
 export type IUser = z.infer<typeof userValidationSchema>;

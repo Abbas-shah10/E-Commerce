@@ -1,10 +1,13 @@
 "use server";
 import bcrypt from "bcryptjs";
 import User from "@/models/User";
+import { connectDB } from "@/lib/db";
 import { signUpSchema } from "@/validations/User";
 
 export async function signUp(_prev: unknown, formData: FormData) {
-  const parsed = signUpSchema.safeParse(formData);
+  const rawData = Object.fromEntries(formData.entries());
+
+  const parsed = signUpSchema.safeParse(rawData);
 
   if (!parsed.success) {
     return { success: false, error: "Invalid form data" };
@@ -13,6 +16,7 @@ export async function signUp(_prev: unknown, formData: FormData) {
   const { username, email, password, role } = parsed.data;
 
   try {
+    await connectDB();
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -21,14 +25,14 @@ export async function signUp(_prev: unknown, formData: FormData) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
+    await User.create({
       username,
       email,
       password: hashedPassword,
       role,
     });
 
-    return { success: true, message: "User signup successfully", user };
+    return { success: true, message: "User signup successfully" };
   } catch (error) {
     return { success: false, error: "Something went wrong" };
   }

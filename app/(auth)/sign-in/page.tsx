@@ -1,11 +1,53 @@
-import React from "react";
+"use client";
+import Link from "next/link";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { signInSchema } from "@/validations/User";
+import type { z } from "zod";
+import { signIn } from "next-auth/react";
+import { useState } from "react";
 
 const SignIn = () => {
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [serverSuccess, setServerSuccess] = useState<string | null | boolean>(
+    null,
+  );
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<
+    z.input<typeof signInSchema>,
+    unknown,
+    z.output<typeof signInSchema>
+  >({
+    resolver: zodResolver(signInSchema),
+    mode: "onTouched",
+  });
+
+  const onSubmit = async (data: z.output<typeof signInSchema>) => {
+    setServerError(null);
+    setServerSuccess(null);
+
+    const result = await signIn("credentials", {
+      email: data.email,
+      password: data.password,
+      redirect: false,
+    });
+
+    if (!result.ok) {
+      setServerError(result.error || "Error SignIn failed");
+    } else {
+      reset();
+      setServerSuccess("Sign-In Successfully");
+    }
+  };
   return (
     <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-200">
+          <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white shadow-lg shadow-indigo-200">
             <svg
               width="24"
               height="24"
@@ -35,8 +77,17 @@ const SignIn = () => {
             Sign in to continue to your account
           </p>
         </div>
+        {serverError && (
+          <p style={{ color: "red", fontWeight: "bold" }}>{serverError}</p>
+        )}
+        {serverSuccess && (
+          <p style={{ color: "green", fontWeight: "bold" }}>{serverSuccess}</p>
+        )}
 
-        <form className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/60 sm:p-8">
+        <form
+          className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/60 sm:p-8"
+          onSubmit={handleSubmit(onSubmit)}
+        >
           <div className="space-y-5">
             <div>
               <label
@@ -46,12 +97,16 @@ const SignIn = () => {
                 Email address
               </label>
               <input
+                {...register("email")}
                 id="email"
                 name="email"
                 type="email"
                 placeholder="you@example.com"
-                className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+                className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-black focus:ring-4 focus:ring-indigo-100"
               />
+              {errors.email && (
+                <p style={{ color: "red" }}>{errors.email.message}</p>
+              )}
             </div>
 
             <div>
@@ -62,20 +117,24 @@ const SignIn = () => {
                 >
                   Password
                 </label>
-                <a
+                <Link
                   href="#"
-                  className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                  className="text-sm font-medium text-black hover:text-gray-700 transition"
                 >
                   Forgot password?
-                </a>
+                </Link>
               </div>
               <input
+                {...register("password")}
                 id="password"
                 name="password"
                 type="password"
                 placeholder="Enter your password"
-                className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+                className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-black focus:ring-4 focus:ring-indigo-100"
               />
+              {errors.password && (
+                <p style={{ color: "red" }}>{errors.password.message}</p>
+              )}
             </div>
 
             <label className="flex cursor-pointer items-center gap-2.5 text-sm text-slate-600">
@@ -87,55 +146,23 @@ const SignIn = () => {
             </label>
 
             <button
+              disabled={isSubmitting}
               type="submit"
-              className="h-11 w-full rounded-lg bg-indigo-600 text-sm font-semibold text-white shadow-md shadow-indigo-200 transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-200"
+              className="w-full rounded-lg bg-zinc-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2"
             >
-              Sign in
+              {isSubmitting ? "Signing In..." : "Sign in"}
             </button>
           </div>
-
-          <div className="my-6 flex items-center gap-4">
-            <div className="h-px flex-1 bg-slate-200" />
-            <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
-              or
-            </span>
-            <div className="h-px flex-1 bg-slate-200" />
-          </div>
-
-          <button
-            type="button"
-            className="flex h-11 w-full items-center justify-center gap-3 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-100"
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-              <path
-                fill="#4285F4"
-                d="M17.64 9.2c0-.63-.06-1.23-.16-1.8H9v3.4h4.84a4.14 4.14 0 0 1-1.8 2.72v2.22h2.91c1.7-1.57 2.69-3.88 2.69-6.54Z"
-              />
-              <path
-                fill="#34A853"
-                d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.22c-.8.54-1.83.86-3.05.86-2.35 0-4.34-1.59-5.05-3.73H.96v2.29A9 9 0 0 0 9 18Z"
-              />
-              <path
-                fill="#FBBC05"
-                d="A3.95 3.95 0 0 1 8.79 10a9 9 0 0 0-.84-3.73H.96a9 9 0 0 0 0 8.18l2.99-2.29A5.4 5.4 0 0 1 3.95 10c0-.68.13-1.32.35-1.9Z"
-              />
-              <path
-                fill="#EA4335"
-                d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A8.65 8.65 0 0 0 9 0 9 9 0 0 0 .96 4.98L3.95 7.27C4.66 5.17 6.65 3.58 9 3.58Z"
-              />
-            </svg>
-            Continue with Google
-          </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-slate-600">
           Don&apos;t have an account?{" "}
-          <a
-            href="#"
-            className="font-semibold text-indigo-600 hover:text-indigo-700"
+          <Link
+            href="/sign-up"
+            className="font-semibold text-zinc-900 hover:underline"
           >
             Sign up
-          </a>
+          </Link>
         </p>
       </div>
     </main>

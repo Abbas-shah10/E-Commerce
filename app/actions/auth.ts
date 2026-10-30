@@ -28,7 +28,7 @@ export async function signUp(_prev: unknown, formData: FormData) {
       role,
     });
 
-    return { success: false, message: "User signup successfully", user };
+    return { success: true, message: "User signup successfully", user };
   } catch (error) {
     return { success: false, error: "Something went wrong" };
   }

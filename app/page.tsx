@@ -1,8 +1,10 @@
 import { connection } from "next/server";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
+import { signOut } from "@/lib/auth";
+
 export default async function Home() {
-  connection();
+  await connection();
   const session = await auth();
   const products = [
     {
@@ -34,6 +36,11 @@ export default async function Home() {
       image: "👜",
     },
   ];
+
+  const handleSignOut = async () => {
+    "use server";
+    await signOut({ redirectTo: "/sign-in" });
+  };
 
   return (
     <main className="min-h-screen bg-[#f7f7f4] text-[#171717]">
@@ -103,12 +110,15 @@ export default async function Home() {
                 >
                   My orders
                 </Link>
-                <Link
-                  href="/sign-out"
-                  className="block rounded-xl px-3 py-2.5 text-sm font-bold text-red-600 transition hover:bg-red-50"
-                >
-                  Sign out
-                </Link>
+                <form>
+                  <button
+                    formAction={handleSignOut}
+                    type="submit"
+                    className="block rounded-xl px-3 py-2.5 text-sm font-bold text-red-600 transition hover:bg-red-50"
+                  >
+                    Sign out
+                  </button>
+                </form>
               </div>
             </div>
           ) : (

@@ -33,10 +33,11 @@ const SignIn = () => {
     const result = await signIn("credentials", {
       email: data.email,
       password: data.password,
+      callbackUrl: "/",
       redirect: false,
     });
 
-    if (!result.ok) {
+    if (!result?.ok) {
       setServerError(result.error || "Error SignIn failed");
     } else {
       reset();

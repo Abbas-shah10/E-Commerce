@@ -1,4 +1,4 @@
-// components/layout/DashboardShell.tsx
+"use client";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import NavLinks, { type NavItem } from "./NavLinks";

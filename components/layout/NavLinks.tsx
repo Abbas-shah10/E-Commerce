@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export type NavItem = { label: string; icon: string; href: string };
+export type NavItem = { label: string; href: string };
 
 export default function NavLinks({
   links,
@@ -34,9 +34,6 @@ export default function NavLinks({
               : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
           }`}
         >
-          <span className="w-5 text-center text-lg" aria-hidden="true">
-            {item.icon}
-          </span>
           {item.label}
         </Link>
       ))}

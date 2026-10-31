@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import User from "@/models/User";
 import { connectDB } from "@/lib/db";
 import { signUpSchema } from "@/validations/User";
-import { signOut } from "next-auth/react";
+import { signOut } from "@/lib/auth";
 
 export async function signUp(_prev: unknown, formData: FormData) {
   const rawData = Object.fromEntries(formData.entries());

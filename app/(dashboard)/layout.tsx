@@ -8,13 +8,9 @@ export default async function UserLayout({
   children: React.ReactNode;
 }) {
   const user = await requireUser();
-  const dashboardLinks = userLinks.map((link) => ({
-    ...link,
-    icon: () => null,
-  }));
 
   return (
-    <DashboardShell links={dashboardLinks} title="My Account" user={user}>
+    <DashboardShell links={userLinks} title="My Account" user={user}>
       {children}
     </DashboardShell>
   );

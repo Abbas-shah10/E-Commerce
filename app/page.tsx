@@ -4,7 +4,6 @@ import Link from "next/link";
 export default async function Home() {
   connection();
   const session = await auth();
-  console.log(session);
   const products = [
     {
       name: "Cloud Runner",

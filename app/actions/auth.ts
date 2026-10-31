@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import User from "@/models/User";
 import { connectDB } from "@/lib/db";
 import { signUpSchema } from "@/validations/User";
+import { signOut } from "next-auth/react";
 
 export async function signUp(_prev: unknown, formData: FormData) {
   const rawData = Object.fromEntries(formData.entries());
@@ -36,4 +37,8 @@ export async function signUp(_prev: unknown, formData: FormData) {
   } catch (error) {
     return { success: false, error: "Something went wrong" };
   }
+}
+
+export async function signOutAction() {
+  await signOut({ redirectTo: "/sign-in" });
 }

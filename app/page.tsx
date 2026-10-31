@@ -1,5 +1,10 @@
+import { connection } from "next/server";
+import { auth } from "@/lib/auth";
 import Link from "next/link";
 export default async function Home() {
+  connection();
+  const session = await auth();
+  console.log(session);
   const products = [
     {
       name: "Cloud Runner",
@@ -34,19 +39,19 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-[#f7f7f4] text-[#171717]">
       <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
-        <a href="#" className="text-xl font-black tracking-tight">
+        <Link href="#" className="text-xl font-black tracking-tight">
           NOVA<span className="text-orange-500">.</span>
-        </a>
+        </Link>
         <nav className="hidden items-center gap-8 text-sm font-medium md:flex">
-          <a href="#new" className="transition hover:text-orange-500">
+          <Link href="#new" className="transition hover:text-orange-500">
             New arrivals
-          </a>
-          <a href="#shop" className="transition hover:text-orange-500">
+          </Link>
+          <Link href="#shop" className="transition hover:text-orange-500">
             Shop
-          </a>
-          <a href="#" className="transition hover:text-orange-500">
+          </Link>
+          <Link href="#" className="transition hover:text-orange-500">
             Collections
-          </a>
+          </Link>
         </nav>
         <div className="flex items-center gap-4">
           <button aria-label="Search" className="text-xl">
@@ -58,18 +63,71 @@ export default async function Home() {
               2
             </span>
           </button>
-          <Link
-            href={"/sign-in"}
-            className="rounded-full border border-[#171717] px-4 py-2 text-sm font-bold transition hover:bg-[#171717] hover:text-white"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/sign-up"
-            className="rounded-full bg-[#171717] px-4 py-2 text-sm font-bold text-white transition hover:bg-orange-600"
-          >
-            Sign Up
-          </Link>
+          {session?.user ? (
+            <div className="group relative">
+              <button
+                type="button"
+                aria-label="Open user profile"
+                className="flex items-center gap-2 rounded-full border border-black/10 bg-white py-1.5 pl-1.5 pr-3 shadow-sm transition hover:border-black/20"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 text-sm font-bold text-white">
+                  {(
+                    session.user.name?.[0] ||
+                    session.user.email?.[0] ||
+                    "U"
+                  ).toUpperCase()}
+                </span>
+                <span className="hidden max-w-32 truncate text-sm font-bold lg:block">
+                  {session.user.name || session.user.email}
+                </span>
+                <span className="text-xs text-stone-500">⌄</span>
+              </button>
+
+              <div className="invisible absolute right-0 top-full z-20 mt-2 w-64 translate-y-1 rounded-2xl border border-black/10 bg-white p-2 opacity-0 shadow-xl transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
+                <div className="border-b border-stone-100 px-3 py-3">
+                  {session.user.name && (
+                    <p className="font-bold">{session.user.name}</p>
+                  )}
+                  <p className="mt-0.5 truncate text-sm text-stone-500">
+                    {session.user.email}
+                  </p>
+                </div>
+                <Link
+                  href="/profile"
+                  className="mt-1 block rounded-xl px-3 py-2.5 text-sm font-bold transition hover:bg-stone-100"
+                >
+                  View profile
+                </Link>
+                <Link
+                  href="/orders"
+                  className="block rounded-xl px-3 py-2.5 text-sm font-bold transition hover:bg-stone-100"
+                >
+                  My orders
+                </Link>
+                <Link
+                  href="/sign-out"
+                  className="block rounded-xl px-3 py-2.5 text-sm font-bold text-red-600 transition hover:bg-red-50"
+                >
+                  Sign out
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <>
+              <Link
+                href={"/sign-in"}
+                className="rounded-full border border-[#171717] px-4 py-2 text-sm font-bold transition hover:bg-[#171717] hover:text-white"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/sign-up"
+                className="rounded-full bg-[#171717] px-4 py-2 text-sm font-bold text-white transition hover:bg-orange-600"
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
       </header>
 

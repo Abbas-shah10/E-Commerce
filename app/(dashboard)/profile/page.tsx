@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import Link from "next/link";
 
 const Profile = async () => {
   const session = await auth();
@@ -47,9 +48,12 @@ const Profile = async () => {
                 </div>
               </div>
 
-              <button className="mt-5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-indigo-200 hover:text-indigo-700 sm:mt-0">
+              <Link
+                href={`/profile/${name}`}
+                className="mt-5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-indigo-200 hover:text-indigo-700 sm:mt-0"
+              >
                 Edit profile
-              </button>
+              </Link>
             </div>
           </div>
         </section>

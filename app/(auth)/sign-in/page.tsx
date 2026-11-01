@@ -5,9 +5,11 @@ import { useForm } from "react-hook-form";
 import { signInSchema } from "@/validations/User";
 import type { z } from "zod";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const SignIn = () => {
+  const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [serverSuccess, setServerSuccess] = useState<string | null | boolean>(
     null,
@@ -33,15 +35,17 @@ const SignIn = () => {
     const result = await signIn("credentials", {
       email: data.email,
       password: data.password,
-      callbackUrl: "/",
+      callbackUrl: "/dashboard",
       redirect: false,
     });
 
     if (!result?.ok) {
-      setServerError(result.error || "Error SignIn failed");
+      setServerError(result?.error || "Error SignIn failed");
     } else {
       reset();
       setServerSuccess("Sign-In Successfully");
+      router.replace(result.url ?? "/dashboard");
+      router.refresh();
     }
   };
   return (

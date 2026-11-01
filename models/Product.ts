@@ -4,7 +4,7 @@ const productSchema = new Schema(
   {
     title: {
       type: String,
-      required: [true, "Product title is required"],
+      required: [true, "Product name is required"],
       trim: true,
     },
     description: {
@@ -16,20 +16,20 @@ const productSchema = new Schema(
       required: [true, "Price is required"],
       min: [0, "Price cannot be negative"],
     },
+    stock: {
+      type: Number,
+      required: true,
+      min: [0, "Stock cannot be negative"],
+      default: 0,
+    },
     category: {
       type: String,
       required: [true, "Category is required"],
+      trim: true,
     },
-    images: [
-      {
-        type: String,
-        default: [],
-      },
-    ],
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: [true, "Product must belong to a user"],
+    imageUrl: {
+      type: String,
+      trim: true,
     },
   },
   { timestamps: true },

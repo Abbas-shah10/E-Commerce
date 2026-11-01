@@ -12,4 +12,13 @@ export const productValidationSchema = z.object({
   user: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid User ID format"),
 });
 
+export const productSchema = z.object({
+  title: z.string().min(2).max(100),
+  description: z.string().min(10).max(2000),
+  price: z.coerce.number().positive("Price must be greater than 0"),
+  stock: z.coerce.number().int().min(0),
+  category: z.string().min(2),
+  imageUrl: z.string().url().optional().or(z.literal("")),
+});
+
 export type IProduct = z.infer<typeof productValidationSchema>;

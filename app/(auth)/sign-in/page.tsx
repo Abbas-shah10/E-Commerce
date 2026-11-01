@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { signInSchema } from "@/validations/User";
 import type { z } from "zod";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -35,16 +35,18 @@ const SignIn = () => {
     const result = await signIn("credentials", {
       email: data.email,
       password: data.password,
-      callbackUrl: "/dashboard",
       redirect: false,
     });
 
     if (!result?.ok) {
       setServerError(result?.error || "Error SignIn failed");
     } else {
+      const session = await getSession();
+      const destination = session?.user?.role === "admin" ? "/admin" : "/dashboard";
+
       reset();
       setServerSuccess("Sign-In Successfully");
-      router.replace(result.url ?? "/dashboard");
+      router.replace(destination);
       router.refresh();
     }
   };

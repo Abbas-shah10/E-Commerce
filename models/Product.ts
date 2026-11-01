@@ -31,9 +31,29 @@ const productSchema = new Schema(
       type: String,
       trim: true,
     },
+    slug: {
+      type: String,
+      required: true,
+      lowercase: true,
+      trim: true,
+      index: {
+        unique: true,
+        partialFilterExpression: { slug: { $type: "string" } },
+      },
+    },
   },
   { timestamps: true },
 );
+
+productSchema.pre("validate", function () {
+  if (!this.slug && this.title) {
+    this.slug = this.title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+});
 
 export const Product =
   mongoose.models.Product || mongoose.model("Product", productSchema);

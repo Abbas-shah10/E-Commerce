@@ -41,7 +41,7 @@ const AdminProductsPage = async () => {
                 return (
                   <tr key={id} className="border-b last:border-0">
                     <td className="p-3 font-medium">{p.title}</td>
-                    <td className="p-3">{formatPrice(p.price)}</td>
+                    <td className="p-3">{formatPrice(Math.round(p.price * 100))}</td>
                     <td className="p-3">{p.stock}</td>
                     <td className="p-3">{p.category}</td>
                     <td className="flex gap-3 p-3">

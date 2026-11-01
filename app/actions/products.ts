@@ -7,7 +7,7 @@ import Product from "@/models/Product";
 import { productSchema } from "@/validations/Product";
 import { auth } from "@/lib/auth";
 import { isValidObjectId } from "mongoose";
-
+import { slugify } from "@/lib/utils";
 type FormState = { error?: string } | null;
 
 export async function createProduct(_prev: FormState, formData: FormData) {
@@ -21,6 +21,14 @@ export async function createProduct(_prev: FormState, formData: FormData) {
   await connectDB();
 
   const { description, imageUrl, price, title, category, stock } = parsed.data;
+  const baseSlug = slugify(title);
+  let slug = baseSlug;
+  let suffix = 2;
+
+  while (await Product.exists({ slug })) {
+    slug = `${baseSlug}-${suffix}`;
+    suffix += 1;
+  }
 
   await Product.create({
     user: session?.user?.id,
@@ -30,6 +38,7 @@ export async function createProduct(_prev: FormState, formData: FormData) {
     stock,
     price,
     imageUrl: imageUrl || undefined,
+    slug,
   });
 
   revalidatePath("/admin/products");

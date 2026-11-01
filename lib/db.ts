@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import Product from "@/models/Product";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -30,6 +31,7 @@ export async function connectDB() {
   }
 
   cached.conn = await cached.promise;
+  await Product.syncIndexes();
   console.log("Database connected successfully");
   return cached.conn;
 }

@@ -28,7 +28,6 @@ export default function ProductForm({
     null,
   );
 
-  console.log(defaults);
   return (
     <form action={formAction} className="max-w-xl space-y-4">
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}

@@ -2,46 +2,31 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Product from "@/models/Product";
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
-// const products = [
-//   {
-//     name: "Wireless Headphones",
-//     category: "Audio",
-//     price: 129.99,
-//     stock: 48,
-//     color: "bg-violet-100 text-violet-600",
-//     icon: "🎧",
-//   },
-//   {
-//     name: "Smart Watch Pro",
-//     category: "Wearables",
-//     price: 249.99,
-//     stock: 32,
-//     color: "bg-sky-100 text-sky-600",
-//     icon: "⌚",
-//   },
-//   {
-//     name: "Portable Speaker",
-//     category: "Audio",
-//     price: 89.99,
-//     stock: 16,
-//     color: "bg-orange-100 text-orange-600",
-//     icon: "🔊",
-//   },
-//   {
-//     name: "Mechanical Keyboard",
-//     category: "Accessories",
-//     price: 159.99,
-//     stock: 24,
-//     color: "bg-emerald-100 text-emerald-600",
-//     icon: "⌨️",
-//   },
-// ];
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
+}
 
-const page = async () => {
+const page = async ({ searchParams }: PageProps) => {
   await connectDB();
-  const products = await Product.find().lean();
+
+  const params = await searchParams;
+  const limit = 8;
+  const requestedPage = Math.max(Number(params.page) || 1, 1);
+
+  const totalProducts = await Product.countDocuments();
+  const totalPages = Math.max(Math.ceil(totalProducts / limit), 1);
+  const currentPage = Math.min(requestedPage, totalPages);
+  const skipAmount = (currentPage - 1) * limit;
+
+  const products = await Product.find()
+    .sort({ createdAt: -1 })
+    .skip(skipAmount)
+    .limit(limit)
+    .lean();
+
   const session = await auth();
 
   return (
@@ -229,6 +214,47 @@ const page = async () => {
             </div>
           </aside>
         </section>
+
+        <nav
+          aria-label="Products pagination"
+          className="mt-7 flex items-center justify-center gap-4"
+        >
+          {currentPage > 1 ? (
+            <Link
+              href={`/dashboard?page=${currentPage - 1}`}
+              className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-violet-300 hover:text-violet-600"
+            >
+              ← Previous
+            </Link>
+          ) : (
+            <button
+              disabled
+              className="cursor-not-allowed rounded-2xl border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-400"
+            >
+              ← Previous
+            </button>
+          )}
+
+          <span className="text-sm font-medium text-slate-500">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          {currentPage < totalPages ? (
+            <Link
+              href={`/dashboard?page=${currentPage + 1}`}
+              className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-violet-300 hover:text-violet-600"
+            >
+              Next →
+            </Link>
+          ) : (
+            <button
+              disabled
+              className="cursor-not-allowed rounded-2xl border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-400"
+            >
+              Next →
+            </button>
+          )}
+        </nav>
       </div>
     </main>
   );

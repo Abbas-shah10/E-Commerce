@@ -1,4 +1,4 @@
-import { getUsers } from "@/app/actions/users";
+import { getUsers } from "@/app/actions/admin/users-actions";
 import UserActionsMenu from "@/components/layout/UserActionsMenu";
 import Link from "next/link";
 import React from "react";

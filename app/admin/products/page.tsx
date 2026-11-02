@@ -1,4 +1,4 @@
-import { deleteProduct } from "@/app/actions/products";
+import { deleteProduct } from "@/app/actions/admin/products-actions";
 import { connectDB } from "@/lib/db";
 import { formatPrice } from "@/lib/utils";
 import Product from "@/models/Product";
@@ -41,7 +41,9 @@ const AdminProductsPage = async () => {
                 return (
                   <tr key={id} className="border-b last:border-0">
                     <td className="p-3 font-medium">{p.title}</td>
-                    <td className="p-3">{formatPrice(Math.round(p.price * 100))}</td>
+                    <td className="p-3">
+                      {formatPrice(Math.round(p.price * 100))}
+                    </td>
                     <td className="p-3">{p.stock}</td>
                     <td className="p-3">{p.category}</td>
                     <td className="flex gap-3 p-3">

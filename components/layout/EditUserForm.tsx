@@ -1,7 +1,7 @@
 // components/EditUserForm.tsx
 "use client";
 
-import { updateUserAction } from "@/app/actions/users";
+import { updateUserAction } from "@/app/actions/admin/users-actions";
 import { useRouter } from "next/navigation";
 
 export default function EditUserForm({ user }: { user: any }) {

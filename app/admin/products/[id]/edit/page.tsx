@@ -3,7 +3,7 @@ import { isValidObjectId } from "mongoose";
 import { connectDB } from "@/lib/db";
 import Product from "@/models/Product";
 import ProductForm from "@/components/layout/admin/ProductForm";
-import { updateProduct } from "@/app/actions/products";
+import { updateProduct } from "@/app/actions/admin/products-actions";
 
 export default async function EditProductPage({
   params,

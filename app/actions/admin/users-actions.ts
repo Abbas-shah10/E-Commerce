@@ -115,7 +115,7 @@ export async function deleteUserAction(userId: string) {
   const session = await auth();
 
   if (!session || !session.user) {
-    throw new Error("Unauthorized: You must be logged in.");
+    return { success: false, error: "Unauthorized: You must be logged in." };
   }
 
   const isAdmin = session?.user.role === "admin";

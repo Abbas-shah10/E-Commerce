@@ -1,4 +1,5 @@
 import { getUsers } from "@/app/actions/users";
+import UserActionsMenu from "@/components/layout/UserActionsMenu";
 import Link from "next/link";
 import React from "react";
 
@@ -16,7 +17,7 @@ const formatDateTime = (value: string | Date) => {
   }).format(date);
 };
 
-const page = async ({ searchParams }: PageProps) => {
+const UsersPage = async ({ searchParams }: PageProps) => {
   const params = await searchParams;
   const currentSearch = params.search?.trim() || "";
   const requestedPage = Number.parseInt(params.page || "1", 10);
@@ -133,23 +134,21 @@ const page = async ({ searchParams }: PageProps) => {
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                          user.admin === "Active"
+                          user.role === "admin"
                             ? "bg-green-50 text-green-700"
-                            : user.status === "Pending"
+                            : user.role === "user"
                               ? "bg-yellow-50 text-yellow-700"
                               : "bg-gray-100 text-gray-600"
                         }`}
                       >
-                        {user.admin}
+                        {user.role}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-gray-500">
                       {formatDateTime(user.createdAt)}
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <button className="rounded-md px-2 py-1 text-lg font-bold text-gray-400 hover:bg-gray-100 hover:text-gray-700">
-                        •••
-                      </button>
+                    <td className="absolute px-6 py-4 text-right">
+                      <UserActionsMenu userId={user._id} />
                     </td>
                   </tr>
                 ))}
@@ -206,4 +205,4 @@ const page = async ({ searchParams }: PageProps) => {
   );
 };
 
-export default page;
+export default UsersPage;

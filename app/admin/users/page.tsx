@@ -6,6 +6,16 @@ interface PageProps {
   searchParams: Promise<{ search?: string; page?: string }>;
 }
 
+const formatDateTime = (value: string | Date) => {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+};
+
 const page = async ({ searchParams }: PageProps) => {
   const params = await searchParams;
   const currentSearch = params.search?.trim() || "";
@@ -140,17 +150,19 @@ const page = async ({ searchParams }: PageProps) => {
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                          user.status === "Active"
+                          user.admin === "Active"
                             ? "bg-green-50 text-green-700"
                             : user.status === "Pending"
                               ? "bg-yellow-50 text-yellow-700"
                               : "bg-gray-100 text-gray-600"
                         }`}
                       >
-                        {user.status}
+                        {user.admin}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-gray-500">{user.joined}</td>
+                    <td className="px-6 py-4 text-gray-500">
+                      {formatDateTime(user.createdAt)}
+                    </td>
                     <td className="px-6 py-4 text-right">
                       <button className="rounded-md px-2 py-1 text-lg font-bold text-gray-400 hover:bg-gray-100 hover:text-gray-700">
                         •••

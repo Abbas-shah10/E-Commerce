@@ -147,7 +147,7 @@ const UsersPage = async ({ searchParams }: PageProps) => {
                     <td className="px-6 py-4 text-gray-500">
                       {formatDateTime(user.createdAt)}
                     </td>
-                    <td className="absolute px-6 py-4 text-right">
+                    <td className="absolute right-12 px-6 py-4 text-right">
                       <UserActionsMenu userId={user._id} />
                     </td>
                   </tr>

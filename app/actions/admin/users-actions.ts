@@ -121,7 +121,10 @@ export async function deleteUserAction(userId: string) {
   const isAdmin = session?.user.role === "admin";
 
   if (!isAdmin) {
-    throw new Error("Forbidden. Only Admin can perform this operation");
+    return {
+      success: false,
+      error: "Forbidden: Only Admin can perform this operation.",
+    };
   }
 
   try {

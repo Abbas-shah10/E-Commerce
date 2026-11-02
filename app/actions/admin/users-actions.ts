@@ -110,3 +110,33 @@ export async function updateUserAction(formData: {
     return { error: "Internal server error. Failed to update user." };
   }
 }
+
+export async function deleteUserAction(userId: string) {
+  const session = await auth();
+
+  if (!session || !session.user) {
+    throw new Error("Unauthorized: You must be logged in.");
+  }
+
+  const isAdmin = session?.user.role === "admin";
+
+  if (!isAdmin) {
+    throw new Error("Forbidden. Only Admin can perform this operation");
+  }
+
+  try {
+    await connectDB();
+
+    const user = await User.findByIdAndDelete(userId);
+
+    if (!user) {
+      return { success: false, error: "User not found in our records." };
+    }
+    revalidatePath("/admin/users");
+
+    return { success: true, message: "User deleted Successfully" };
+  } catch (error) {
+    console.error("Database Delete Error:", error);
+    return { error: "Internal server error. Failed to delete user." };
+  }
+}

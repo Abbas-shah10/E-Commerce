@@ -107,13 +107,7 @@ const page = async ({ searchParams }: PageProps) => {
             <table className="w-full text-left text-sm">
               <thead className="border-b border-gray-200 bg-gray-50 text-xs font-semibold uppercase text-gray-500">
                 <tr>
-                  <th className="px-6 py-3">
-                    <input
-                      type="checkbox"
-                      className="rounded border-gray-300"
-                    />
-                  </th>
-                  <th className="px-6 py-3">User</th>
+                  <th className="px-6 py-3 text-start">User</th>
                   <th className="px-6 py-3">Role</th>
                   <th className="px-6 py-3">Status</th>
                   <th className="px-6 py-3">Joined</th>
@@ -124,21 +118,10 @@ const page = async ({ searchParams }: PageProps) => {
                 {users.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
-                      <input
-                        type="checkbox"
-                        className="rounded border-gray-300"
-                      />
-                    </td>
-                    <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div
-                          className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold ${user.color}`}
-                        >
-                          {user.initials}
-                        </div>
                         <div>
-                          <p className="font-medium text-gray-900">
-                            {user.name}
+                          <p className="font-medium text-start text-gray-900">
+                            {user.username}
                           </p>
                           <p className="mt-0.5 text-xs text-gray-500">
                             {user.email}

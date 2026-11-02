@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { deleteUserAction } from "@/app/actions/admin/users-actions";
 
 export default function UserActionsMenu({ userId }: { userId: string }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,7 +22,7 @@ export default function UserActionsMenu({ userId }: { userId: string }) {
 
   const handleDelete = async () => {
     if (confirm("Are you sure you want to delete this user?")) {
-      // await deleteUserAction(userId);
+      await deleteUserAction(userId);
       setIsOpen(false);
     }
   };

@@ -5,7 +5,7 @@ export type ProductCardData = {
   id: string;
   name: string;
   slug: string;
-  priceCents: number;
+  price: number;
   stock: number;
   category: string;
   imageUrl?: string;
@@ -49,7 +49,7 @@ export default function ProductCard({ product }: { product: ProductCardData }) {
           {product.name}
         </h3>
         <p className="mt-auto pt-2 text-lg font-bold text-slate-900">
-          {formatPrice(product.priceCents)}
+          {formatPrice(product.price)}
         </p>
       </div>
     </Link>

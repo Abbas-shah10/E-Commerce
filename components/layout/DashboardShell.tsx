@@ -2,7 +2,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import NavLinks, { type NavItem } from "./NavLinks";
-import { signOutAction } from "@/app/actions/auth";
+import { signOutAction } from "@/app/actions/auth/auth";
 
 interface DashboardShellProps {
   children: ReactNode;

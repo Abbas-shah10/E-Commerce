@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import type { z } from "zod";
 import { signUpSchema } from "@/validations/User";
-import { signUp } from "@/app/actions/auth";
+import { signUp } from "@/app/actions/auth/auth";
 
 const SignUp = () => {
   const [serverError, setServerError] = useState<string | null>(null);

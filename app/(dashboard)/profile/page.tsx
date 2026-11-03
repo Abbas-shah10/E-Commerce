@@ -42,9 +42,6 @@ const Profile = async () => {
                       ✓
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Product Designer · San Francisco, CA
-                  </p>
                 </div>
               </div>
 

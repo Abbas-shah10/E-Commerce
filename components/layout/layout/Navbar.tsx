@@ -17,7 +17,6 @@ const linkClass =
 export default async function Navbar() {
   const session = await auth();
   const user = session?.user;
-
   return (
     <header className="sticky top-0 z-50 border-b border-white/70 bg-white/80 backdrop-blur-xl">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 sm:h-20 lg:px-8">
@@ -25,7 +24,13 @@ export default async function Navbar() {
 
         <div className="hidden items-center gap-8 md:flex">
           {links.map((l) => (
-            <Link key={l.href} href={l.href} className={linkClass}>
+            <Link
+              key={l.href}
+              href={l.href}
+              className={`${linkClass} rounded-lg px-2 py-1.5 data-[active=true]:bg-violet-50 data-[active=true]:text-violet-600`}
+              data-nav-link="true"
+              data-route={l.href}
+            >
               {l.label}
             </Link>
           ))}

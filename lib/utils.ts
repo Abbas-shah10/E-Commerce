@@ -6,9 +6,9 @@ export function slugify(text: string) {
     .replace(/(^-|-$)/g, "");
 }
 
-export function formatPrice(cents: number) {
+export function formatPrice(price: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(cents / 100);
+  }).format(price);
 }

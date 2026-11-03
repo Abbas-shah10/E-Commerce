@@ -42,6 +42,7 @@ const Profile = async () => {
                       ✓
                     </span>
                   </div>
+                  <span className="text-sm text-slate-500">{email}</span>
                 </div>
               </div>
 

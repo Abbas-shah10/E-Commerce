@@ -4,16 +4,10 @@ const nextConfig: NextConfig = {
   /* config options here */
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com", // Allows direct raw assets
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "unsplash.com", // Allows fallback paths
-        pathname: "/**",
-      },
+      { protocol: "https", hostname: "picsum.photos" }, // your 100 seed products
+      { protocol: "https", hostname: "fastly.picsum.photos" }, // picsum redirects here
+      { protocol: "https", hostname: "images.unsplash.com" }, // real Unsplash photos
+      { protocol: "https", hostname: "res.cloudinary.com" }, // uploads in Step 9
     ],
   },
   experimental: {

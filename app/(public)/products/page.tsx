@@ -11,7 +11,7 @@ export default async function ProductsPage() {
     id: String(p._id),
     name: p.name,
     slug: p.slug,
-    priceCents: p.priceCents,
+    price: p.price,
     stock: p.stock,
     category: p.category,
     imageUrl: p.imageUrl ?? undefined,

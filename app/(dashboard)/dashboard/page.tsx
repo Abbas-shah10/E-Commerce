@@ -119,14 +119,14 @@ const page = async ({ searchParams }: PageProps) => {
             <div className="grid gap-4 sm:grid-cols-2">
               {products.map((product) => (
                 <article
-                  key={product.name}
+                  key={product.title}
                   className="group rounded-3xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
                 >
                   <div className="relative mb-4 flex h-40 items-center justify-center overflow-hidden rounded-[18px] bg-slate-50 text-6xl">
                     <span className="transition duration-300 group-hover:scale-110">
                       <Image
                         src={product.imageUrl}
-                        alt={product.name}
+                        alt={product.title}
                         width={160}
                         height={160}
                         className="h-full w-full object-cover"

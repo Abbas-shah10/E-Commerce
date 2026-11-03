@@ -12,7 +12,7 @@ export const getProductBySlug = cache(async (slug: string) => {
     name: p.name,
     slug: p.slug,
     description: p.description,
-    priceCents: p.priceCents,
+    price: p.price,
     stock: p.stock,
     category: p.category,
     imageUrl: p.imageUrl ?? undefined,

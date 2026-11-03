@@ -58,7 +58,7 @@ export default async function ProductDetailPage({ params }: Props) {
             {product.name}
           </h1>
           <p className="mt-4 text-3xl font-bold">
-            {formatPrice(product.priceCents)}
+            {formatPrice(product.price)}
           </p>
 
           <p className="mt-2 text-sm">

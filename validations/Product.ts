@@ -18,7 +18,15 @@ export const productSchema = z.object({
   price: z.coerce.number().positive("Price must be greater than 0"),
   stock: z.coerce.number().int().min(0),
   category: z.string().min(2),
-  imageUrl: z.string().url().optional().or(z.literal("")),
+  imageUrl: z
+    .string()
+    .url()
+    .refine(
+      (url) => !url.includes("unsplash.com/photos/"),
+      "Use the direct image link (it should start with images.unsplash.com)",
+    )
+    .optional()
+    .or(z.literal("")),
 });
 
 export type IProduct = z.infer<typeof productValidationSchema>;

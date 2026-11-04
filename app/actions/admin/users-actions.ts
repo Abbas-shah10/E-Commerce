@@ -12,6 +12,7 @@ interface FetchUsersParams {
   limit?: number;
 }
 
+
 export async function getUsers({
   search = "",
   page = 1,

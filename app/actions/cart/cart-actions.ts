@@ -1,8 +1,8 @@
+"use server";
 import Product from "@/models/Product";
 import Cart from "@/models/Cart";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import { revalidatePath } from "next/cache";
 
 export async function addToCartAction(productId: string) {
   const session = await auth();
@@ -51,8 +51,6 @@ export async function addToCartAction(productId: string) {
   }
 
   await cart.save();
-
-  revalidatePath("/cart");
 
   return { success: true };
 }

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/lib/products";
 import { formatPrice } from "@/lib/utils";
+import AddToCartButton from "@/components/products/AddToCartButton";
+import { auth } from "@/lib/auth";
 
 type Props = { params: Promise<{ slug: string }> }; // a Promise in newer Next.js
 
@@ -18,6 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProductDetailPage({ params }: Props) {
+  const session = await auth();
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) notFound();
@@ -78,12 +81,11 @@ export default async function ProductDetailPage({ params }: Props) {
           </p>
 
           {/* Step 5 replaces this disabled button with a real AddToCartButton */}
-          <button
-            disabled
-            className="mt-8 w-full rounded-xl bg-slate-900 px-6 py-3 font-semibold text-white opacity-50 sm:w-auto"
-          >
-            {outOfStock ? "Out of stock" : "Add to cart (coming soon)"}
-          </button>
+          <AddToCartButton
+            productId={product.id}
+            outOfStock={outOfStock}
+            isLoggedIn={!!session?.user}
+          />
         </div>
       </div>
     </div>

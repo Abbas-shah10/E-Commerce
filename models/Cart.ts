@@ -15,12 +15,10 @@ const cartSchema = new mongoose.Schema({
     require: true,
     unique: true,
   },
-  items: [
-    {
-      type: [CartItemsSchema],
-      default: [],
-    },
-  ],
+  items: {
+    type: [CartItemsSchema],
+    default: [],
+  },
 });
 
 export const Cart = mongoose.models.Cart || mongoose.model("Cart", cartSchema);

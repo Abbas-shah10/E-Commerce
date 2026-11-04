@@ -34,8 +34,8 @@ export async function addToCartAction(productId: string) {
     return { success: true, message: "Cart created successfully" };
   }
 
-  const existingItem = cart.items.find(
-    (item) => item.product.toString() === product._id.toString(),
+  const existingItem = cart?.items?.find(
+    (item) => item.product?.toString() === product?._id?.toString(),
   );
 
   if (existingItem) {
@@ -51,6 +51,60 @@ export async function addToCartAction(productId: string) {
   }
 
   await cart.save();
+
+  return { success: true };
+}
+
+export async function removeFromCartAction(productId: string) {
+  const session = await auth();
+
+  if (!session || !session?.user) {
+    return { error: "Unauthorized: You must be logged in." };
+  }
+
+  await connectDB();
+
+  await Cart.updateOne(
+    { user: session?.user.id },
+    { $pull: { items: { product: productId } } },
+  );
+
+  return { success: true };
+}
+
+export async function updateCartQuantityAction(
+  productId: string,
+  quantity: number,
+) {
+  const session = await auth();
+
+  if (!session || !session?.user) {
+    return { error: "Unauthorized: You must be logged in." };
+  }
+
+  await connectDB();
+
+  const product = await Product.findById(productId);
+
+  if (quantity > product.stock) {
+    return { error: `Only ${product.stock} available` };
+  }
+
+  if (!product) return { error: "Not found product" };
+
+  const cart = await Cart.findOne({ user: session?.user.id });
+
+  if (!cart) {
+    return { error: "Cart not found" };
+  }
+
+  const item = await cart.items.find(
+    (i) => i.product?.toString() === product._id?.toString(),
+  );
+
+  if (!item) return { error: "Item is not in your cart" };
+
+  item.quantity = quantity;
 
   return { success: true };
 }

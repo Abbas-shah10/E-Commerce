@@ -4,17 +4,17 @@ import { requireUser } from "@/lib/guards";
 import { connectDB } from "@/lib/db";
 import { formatPrice } from "@/lib/utils";
 import Cart from "@/models/Cart";
-import "@/models/Product"; // registers the Product model so populate works
-import QuantityControl from "@/components/cart/QuantityControl";
+import Product from "@/models/Product";
 import RemoveButton from "@/components/cart/RemoveButton";
+import QuantityControl from "@/components/cart/QuantityControl";
 
 export const metadata = { title: "Your cart" };
 
 type PopulatedProduct = {
   _id: unknown;
-  name: string;
+  title: string;
   slug: string;
-  priceCents: number;
+  price: number;
   stock: number;
   imageUrl?: string;
 } | null;
@@ -24,7 +24,7 @@ export default async function CartPage() {
   await connectDB();
 
   const cart = await Cart.findOne({ user: user.id })
-    .populate("items.product")
+    .populate({ path: "items.product", model: Product })
     .lean();
 
   const rawItems = (cart?.items ?? []) as {
@@ -38,9 +38,9 @@ export default async function CartPage() {
       ? [
           {
             productId: String(product._id),
-            name: product.name,
+            title: product.title,
             slug: product.slug,
-            priceCents: product.priceCents,
+            price: product.price,
             stock: product.stock,
             imageUrl: product.imageUrl,
             quantity,
@@ -48,12 +48,8 @@ export default async function CartPage() {
         ]
       : [],
   );
-
   const removedCount = rawItems.length - items.length;
-  const totalCents = items.reduce(
-    (sum, i) => sum + i.priceCents * i.quantity,
-    0,
-  );
+  const totalCents = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const hasProblem = items.some((i) => i.quantity > i.stock);
 
   if (items.length === 0) {
@@ -99,7 +95,7 @@ export default async function CartPage() {
                 {item.imageUrl ? (
                   <Image
                     src={item.imageUrl}
-                    alt={item.name}
+                    alt={item.title}
                     fill
                     sizes="96px"
                     className="object-cover"
@@ -118,14 +114,14 @@ export default async function CartPage() {
                       href={`/products/${item.slug}`}
                       className="line-clamp-2 font-semibold hover:text-violet-600"
                     >
-                      {item.name}
+                      {item.title}
                     </Link>
                     <p className="text-sm text-slate-500">
-                      {formatPrice(item.priceCents)} each
+                      {formatPrice(item.price)} each
                     </p>
                   </div>
                   <p className="font-bold">
-                    {formatPrice(item.priceCents * item.quantity)}
+                    {formatPrice(item.price * item.quantity)}
                   </p>
                 </div>
 
@@ -138,12 +134,12 @@ export default async function CartPage() {
                 )}
 
                 <div className="mt-auto flex items-center justify-between">
-                  {/* <QuantityControl
+                  <QuantityControl
                     productId={item.productId}
                     quantity={item.quantity}
                     stock={item.stock}
-                  /> */}
-                  {/* <RemoveButton productId={item.productId} /> */}
+                  />
+                  <RemoveButton productId={item.productId} />
                 </div>
               </div>
             </li>

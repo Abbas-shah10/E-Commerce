@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/lib/products";
 import { formatPrice } from "@/lib/utils";
-import AddToCartButton from "@/components/products/AddToCartButton";
+import AddToCartButton from "@/components/cart/AddToCartButton";
 import { auth } from "@/lib/auth";
 
 type Props = { params: Promise<{ slug: string }> }; // a Promise in newer Next.js

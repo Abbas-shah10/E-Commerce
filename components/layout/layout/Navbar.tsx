@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 
 import Logo from "./Logo";
 import { signOutAction } from "@/app/actions/auth/auth";
+import { getCartCount } from "@/app/actions/cart/cart-actions";
 
 const links = [
   { href: "/", label: "Home" },
@@ -16,6 +17,17 @@ const linkClass =
 export default async function Navbar() {
   const session = await auth();
   const user = session?.user;
+  const cartCount = user?.id ? await getCartCount(user.id) : 0;
+
+  function CartBadge({ count }: { count: number }) {
+    if (count <= 0) return null;
+
+    return (
+      <span className="ml-1.5 inline-grid min-w-5 place-items-center rounded-full bg-violet-600 px-1.5 py-0.5 text-xs font-bold text-white">
+        {count > 99 ? "99+" : count}
+      </span>
+    );
+  }
   return (
     <header className="sticky top-0 z-50 border-b border-white/70 bg-white/80 backdrop-blur-xl">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 sm:h-20 lg:px-8">
@@ -31,6 +43,7 @@ export default async function Navbar() {
               data-route={l.href}
             >
               {l.label}
+              {l.href === "/cart" && <CartBadge count={cartCount} />}
             </Link>
           ))}
         </div>
@@ -79,6 +92,7 @@ export default async function Navbar() {
         {links.map((l) => (
           <Link key={l.href} href={l.href} className={`${linkClass} shrink-0`}>
             {l.label}
+            {l.href === "/cart" && <CartBadge count={cartCount} />}
           </Link>
         ))}
         {user && (

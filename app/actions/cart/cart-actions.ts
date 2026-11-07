@@ -108,3 +108,14 @@ export async function updateCartQuantityAction(
 
   return { success: true };
 }
+
+export async function getCartCount(userId: string): Promise<number> {
+  await connectDB();
+
+  const cart = await Cart.findOne({ user: userId })
+    .select("items.quantity")
+    .lean();
+
+  const items = (cart?.items ?? []) as { quantity: number }[];
+  return items.reduce((sum, item) => sum + item.quantity, 0);
+}

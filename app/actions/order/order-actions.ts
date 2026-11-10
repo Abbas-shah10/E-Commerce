@@ -66,27 +66,3 @@ export async function createOrderAction() {
   revalidatePath("/orders");
   return { success: true, orderId: String(order._id) };
 }
-
-export async function readOrdersAction() {
-  const user = await requireUser();
-
-  await connectDB();
-
-  const orders = await Order.find({ user: user.id })
-    .sort({ createdAt: -1 })
-    .lean();
-
-  const orderList = orders.map((order) => ({
-    id: String(order._id),
-    status: order.status,
-    createdAt: order.createdAt.toISOString(),
-    itemCount: order.items.reduce((sum, item) => sum + item.quantity, 0),
-    totalCents: order.totalCents,
-  }));
-
-  if (orders.length <= 0) {
-    return { error: "You haven’t placed any orders yet" };
-  }
-
-  return { success: "fetched all orders successfully", orderList };
-}

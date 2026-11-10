@@ -7,6 +7,7 @@ import Cart from "@/models/Cart";
 import Product from "@/models/Product";
 import RemoveButton from "@/components/cart/RemoveButton";
 import QuantityControl from "@/components/cart/QuantityControl";
+import PlaceOrderButton from "@/components/orders/PlaceOrderButton";
 
 export const metadata = { title: "Your cart" };
 
@@ -158,14 +159,7 @@ export default async function CartPage() {
           </div>
 
           {/* Step 6 (Stripe) makes this button work */}
-          <button
-            disabled
-            className="mt-6 w-full rounded-xl bg-slate-900 px-6 py-3 font-semibold text-white opacity-50"
-          >
-            {hasProblem
-              ? "Fix your cart to continue"
-              : "Checkout (coming next)"}
-          </button>
+          <PlaceOrderButton disabled={hasProblem} />
         </aside>
       </div>
     </div>

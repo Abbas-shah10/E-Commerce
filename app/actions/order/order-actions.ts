@@ -1,10 +1,9 @@
+"use server";
 import Product from "@/models/Product";
 import Order from "@/models/Order";
 import Cart from "@/models/Cart";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import { revalidatePath } from "next/cache";
-import { requireUser } from "@/lib/guards";
 
 type PopulatedProduct = {
   _id: unknown;
@@ -63,6 +62,5 @@ export async function createOrderAction() {
     items: orderItems,
     totalCents,
   });
-  revalidatePath("/orders");
   return { success: true, orderId: String(order._id) };
 }

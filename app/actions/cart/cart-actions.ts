@@ -3,6 +3,7 @@ import Product from "@/models/Product";
 import Cart from "@/models/Cart";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+import { revalidatePath } from "next/cache";
 
 export async function addToCartAction(productId: string) {
   const session = await auth();
@@ -49,6 +50,8 @@ export async function addToCartAction(productId: string) {
   }
 
   await cart.save();
+
+  revalidatePath("/", "layout");
 
   return { success: true };
 }
@@ -115,5 +118,6 @@ export async function getCartCount(userId: string): Promise<number> {
     .lean();
 
   const items = (cart?.items ?? []) as { quantity: number }[];
+
   return items.reduce((sum, item) => sum + item.quantity, 0);
 }

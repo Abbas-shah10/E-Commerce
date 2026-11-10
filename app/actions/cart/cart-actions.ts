@@ -70,6 +70,8 @@ export async function removeFromCartAction(productId: string) {
     { $pull: { items: { product: productId } } },
   );
 
+  revalidatePath("/", "layout");
+
   return { success: true };
 }
 
@@ -118,6 +120,5 @@ export async function getCartCount(userId: string): Promise<number> {
     .lean();
 
   const items = (cart?.items ?? []) as { quantity: number }[];
-
   return items.reduce((sum, item) => sum + item.quantity, 0);
 }

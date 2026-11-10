@@ -1,263 +1,336 @@
-import { auth } from "@/lib/auth";
-import { connectDB } from "@/lib/db";
-import Product from "@/models/Product";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import { requireUser } from "@/lib/guards";
+import { connectDB } from "@/lib/db";
+import { formatPrice } from "@/lib/utils";
+import { getCartCount } from "@/app/actions/cart/cart-actions";
+import Order from "@/models/Order";
+import Product from "@/models/Product";
+import StatusBadge from "@/components/orders/StatusBadge";
+import QuickAddButton from "@/components/products/QuickAddButton";
 
-interface PageProps {
+export const metadata = { title: "Dashboard" };
+
+const PAGE_SIZE = 8;
+const PAID_STATUSES = ["paid", "shipped", "delivered"];
+
+export default async function DashboardPage({
+  searchParams,
+}: {
   searchParams: Promise<{ page?: string }>;
-}
-
-const page = async ({ searchParams }: PageProps) => {
+}) {
+  const user = await requireUser();
+  const params = await searchParams;
   await connectDB();
 
-  const params = await searchParams;
-  const limit = 8;
   const requestedPage = Math.max(Number(params.page) || 1, 1);
-
   const totalProducts = await Product.countDocuments();
-  const totalPages = Math.max(Math.ceil(totalProducts / limit), 1);
+  const totalPages = Math.max(Math.ceil(totalProducts / PAGE_SIZE), 1);
   const currentPage = Math.min(requestedPage, totalPages);
-  const skipAmount = (currentPage - 1) * limit;
 
-  const products = await Product.find()
-    .sort({ createdAt: -1 })
-    .skip(skipAmount)
-    .limit(limit)
-    .lean();
+  const [products, orders, cartCount] = await Promise.all([
+    Product.find()
+      .sort({ createdAt: -1 })
+      .skip((currentPage - 1) * PAGE_SIZE)
+      .limit(PAGE_SIZE)
+      .lean(),
+    Order.find({ user: user.id }).sort({ createdAt: -1 }).lean(),
+    getCartCount(user.id),
+  ]);
 
-  const session = await auth();
+  // Stats
+  const totalSpentCents = orders
+    .filter((o) => PAID_STATUSES.includes(o.status))
+    .reduce((sum, o) => sum + o.totalCents, 0);
+  const pendingCount = orders.filter((o) => o.status === "pending").length;
+
+  // Latest 3 orders as plain objects
+  const recentOrders = orders.slice(0, 3).map((o) => ({
+    id: String(o._id),
+    status: o.status as string,
+    totalCents: o.totalCents as number,
+    createdAt: new Date(o.createdAt).toISOString(),
+    itemCount: o.items.reduce(
+      (sum: number, i: { quantity: number }) => sum + i.quantity,
+      0,
+    ),
+  }));
+
+  // Orders per day for the last 7 days
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const activity = Array.from({ length: 7 }, (_, i) => {
+    const start = new Date(today);
+    start.setDate(today.getDate() - (6 - i));
+    const end = new Date(start);
+    end.setDate(start.getDate() + 1);
+    const count = orders.filter((o) => {
+      const created = new Date(o.createdAt);
+      return o.status !== "cancelled" && created >= start && created < end;
+    }).length;
+    return {
+      label: start.toLocaleDateString("en-US", { weekday: "narrow" }),
+      count,
+      isToday: i === 6,
+    };
+  });
+  const maxCount = Math.max(...activity.map((a) => a.count), 1);
+  const weekTotal = activity.reduce((sum, a) => sum + a.count, 0);
+
+  const todayLabel = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
 
   return (
-    <main className="min-h-screen bg-[#f7f8fc] px-4 py-5 text-slate-900 sm:px-7 lg:px-10">
-      <div className="mx-auto max-w-350">
-        <header className="mb-7 flex items-center justify-between">
-          <div>
-            <p className="mb-1 text-sm font-medium text-slate-500">
-              Monday, November 16
-            </p>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Welcome back, {session?.user?.name}
-            </h1>
+    <div className="mx-auto max-w-350">
+      <header className="mb-7">
+        <p className="mb-1 text-sm font-medium text-slate-500">{todayLabel}</p>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Welcome back, {user.name}
+        </h1>
+      </header>
+
+      {/* Stats */}
+      <section className="mb-7 grid gap-5 md:grid-cols-3">
+        <article className="overflow-hidden rounded-[28px] bg-linear-to-br from-[#7c3aed] to-[#4f46e5] p-6 text-white shadow-xl shadow-violet-200/60">
+          <span className="text-sm font-medium text-violet-100">
+            Total spent
+          </span>
+          <p className="mt-10 text-3xl font-bold tracking-tight">
+            {formatPrice(totalSpentCents)}
+          </p>
+          <p className="mt-2 text-sm text-violet-100">
+            Paid, shipped and delivered orders
+          </p>
+        </article>
+
+        <article className="rounded-[28px] border border-white bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-slate-500">
+              Total orders
+            </span>
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-orange-100 text-orange-600">
+              ↗
+            </span>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              aria-label="Notifications"
-              className="relative grid h-11 w-11 place-items-center rounded-full border border-slate-200 bg-white text-xl shadow-sm"
+          <p className="mt-10 text-3xl font-bold">{orders.length}</p>
+          <p className="mt-2 text-sm font-medium text-slate-400">
+            {pendingCount} pending
+          </p>
+        </article>
+
+        <article className="rounded-[28px] border border-white bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-slate-500">
+              Items in cart
+            </span>
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-emerald-100 text-emerald-600">
+              ◆
+            </span>
+          </div>
+          <p className="mt-10 text-3xl font-bold">{cartCount}</p>
+          <Link
+            href="/cart"
+            className="mt-2 inline-block text-sm font-medium text-violet-600"
+          >
+            View cart →
+          </Link>
+        </article>
+      </section>
+
+      <section className="grid gap-7 xl:grid-cols-[1fr_340px]">
+        {/* Products */}
+        <div>
+          <div className="mb-4 flex items-end justify-between">
+            <div>
+              <p className="text-sm font-medium text-violet-600">
+                Explore collection
+              </p>
+              <h2 className="mt-1 text-2xl font-bold">Latest products</h2>
+            </div>
+            <Link
+              href="/products"
+              className="text-sm font-semibold text-violet-600"
             >
-              ♡
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-violet-500" />
-            </button>
-            <div className="grid h-11 w-11 place-items-center rounded-full bg-linear-to-br from-violet-500 to-indigo-700 font-bold text-white shadow-lg shadow-violet-200">
-              {session?.user.name?.charAt(0).toUpperCase()}
-            </div>
+              View all →
+            </Link>
           </div>
-        </header>
 
-        <section className="mb-7 grid gap-5 md:grid-cols-3">
-          <article className="overflow-hidden rounded-[28px] bg-linear-to-br from-[#7c3aed] to-[#4f46e5] p-6 text-white shadow-xl shadow-violet-200/60">
-            <div className="mb-10 flex items-center justify-between">
-              <span className="text-sm font-medium text-violet-100">
-                Total balance
-              </span>
-              <span className="rounded-full bg-white/15 px-3 py-1 text-xs">
-                •••
-              </span>
-            </div>
-            <p className="text-3xl font-bold tracking-tight">$24,780.00</p>
-            <p className="mt-2 text-sm text-violet-100">
-              ↑ 12.5% from last month
+          {products.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">
+              No products yet.
             </p>
-          </article>
-
-          <article className="rounded-[28px] border border-white bg-white p-6 shadow-sm">
-            <div className="mb-10 flex items-center justify-between">
-              <span className="text-sm font-medium text-slate-500">
-                Total orders
-              </span>
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-orange-100 text-orange-600">
-                ↗
-              </span>
-            </div>
-            <p className="text-3xl font-bold">1,284</p>
-            <p className="mt-2 text-sm font-medium text-emerald-500">
-              ↑ 8.2% this month
-            </p>
-          </article>
-
-          <article className="rounded-[28px] border border-white bg-white p-6 shadow-sm">
-            <div className="mb-10 flex items-center justify-between">
-              <span className="text-sm font-medium text-slate-500">
-                Reward points
-              </span>
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-emerald-100 text-emerald-600">
-                ◆
-              </span>
-            </div>
-            <p className="text-3xl font-bold">8,450</p>
-            <p className="mt-2 text-sm font-medium text-slate-400">
-              850 points to next level
-            </p>
-          </article>
-        </section>
-
-        <section className="grid gap-7 xl:grid-cols-[1fr_340px]">
-          <div>
-            <div className="mb-4 flex items-end justify-between">
-              <div>
-                <p className="text-sm font-medium text-violet-600">
-                  Explore collection
-                </p>
-                <h2 className="mt-1 text-2xl font-bold">Popular products</h2>
-              </div>
-              <button className="text-sm font-semibold text-violet-600">
-                View all →
-              </button>
-            </div>
-
+          ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {products.map((product) => (
                 <article
-                  key={product.title}
+                  key={String(product._id)}
                   className="group rounded-3xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
                 >
-                  <div className="relative mb-4 flex h-40 items-center justify-center overflow-hidden rounded-[18px] bg-slate-50 text-6xl">
-                    <span className="transition duration-300 group-hover:scale-110">
-                      <Image
-                        src={product.imageUrl}
-                        alt={product.title}
-                        width={160}
-                        height={160}
-                        className="h-full w-full object-cover"
-                      />
-                    </span>
-                    <span className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white text-sm shadow-sm">
-                      ♡
-                    </span>
-                  </div>
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    {product.category}
-                  </p>
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="font-bold">{product.name}</h3>
-                      <p className="mt-1 text-sm font-semibold text-violet-600">
-                        ${product.price}
-                      </p>
+                  <Link href={`/products/${product.slug}`} className="block">
+                    <div className="relative mb-4 h-40 overflow-hidden rounded-[18px] bg-slate-50">
+                      {product.imageUrl ? (
+                        <Image
+                          src={product.imageUrl}
+                          alt={product.title}
+                          fill
+                          sizes="(min-width: 1280px) 25vw, (min-width: 640px) 40vw, 100vw"
+                          className="object-cover transition duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="grid h-full place-items-center text-sm text-slate-400">
+                          No image
+                        </div>
+                      )}
                     </div>
-                    <button
-                      aria-label={`Add ${product.name} to cart`}
-                      className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${product.color} text-xl`}
-                    >
-                      +
-                    </button>
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                      {product.category}
+                    </p>
+                    <h3 className="line-clamp-2 font-bold">{product.title}</h3>
+                  </Link>
+
+                  <div className="mt-2 flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-violet-600">
+                      {formatPrice(Math.round(product.price * 100))}
+                    </p>
+                    <QuickAddButton
+                      productId={String(product._id)}
+                      title={product.title}
+                      disabled={product.stock <= 0}
+                    />
                   </div>
-                  <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-400">
-                    <span>Free delivery</span>
-                    <span>{product.stock} in stock</span>
+
+                  <div className="mt-4 border-t border-slate-100 pt-3 text-xs text-slate-400">
+                    {product.stock <= 0
+                      ? "Out of stock"
+                      : `${product.stock} in stock`}
                   </div>
                 </article>
               ))}
             </div>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <aside className="space-y-5">
+          <div className="rounded-[28px] bg-[#181825] p-6 text-white shadow-xl">
+            <div className="mb-5 flex items-center justify-between">
+              <span className="text-sm font-medium text-slate-300">
+                Your activity
+              </span>
+              <span className="text-xs text-violet-300">
+                {weekTotal} {weekTotal === 1 ? "order" : "orders"} · 7 days
+              </span>
+            </div>
+            <div className="flex h-36 items-end gap-3 border-b border-white/10 pb-2">
+              {activity.map((a, index) => (
+                <div key={index} className="flex h-full flex-1 items-end">
+                  <div
+                    title={`${a.count} ${a.count === 1 ? "order" : "orders"}`}
+                    className={`w-full rounded-t-md ${a.isToday ? "bg-violet-500" : "bg-white/15"}`}
+                    style={{
+                      height: `${Math.max((a.count / maxCount) * 100, 4)}%`,
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 flex justify-between text-[10px] text-slate-500">
+              {activity.map((a, index) => (
+                <span key={index} className="flex-1 text-center">
+                  {a.label}
+                </span>
+              ))}
+            </div>
           </div>
 
-          <aside className="space-y-5">
-            <div className="rounded-[28px] bg-[#181825] p-6 text-white shadow-xl">
-              <div className="mb-5 flex items-center justify-between">
-                <span className="text-sm font-medium text-slate-300">
-                  Your activity
-                </span>
-                <span className="text-xs text-violet-300">This week⌄</span>
-              </div>
-              <div className="flex h-36 items-end gap-3 border-b border-white/10 pb-2">
-                {[42, 68, 52, 82, 58, 92, 72].map((height, index) => (
-                  <div
-                    key={index}
-                    className="flex flex-1 flex-col items-center gap-2"
-                  >
-                    <div
-                      className={`w-full rounded-t-md ${index === 5 ? "bg-violet-500" : "bg-white/15"}`}
-                      style={{ height: `${height}%` }}
-                    />
-                  </div>
+          <div className="rounded-[28px] border border-slate-100 bg-white p-5 shadow-sm">
+            <h3 className="font-bold">Recent orders</h3>
+
+            {recentOrders.length === 0 ? (
+              <p className="mt-4 text-sm text-slate-500">
+                You haven&apos;t placed any orders yet.
+              </p>
+            ) : (
+              <ul className="mt-4 space-y-3">
+                {recentOrders.map((o) => (
+                  <li key={o.id}>
+                    <Link
+                      href={`/orders/${o.id}`}
+                      className="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 p-3 transition hover:border-violet-300"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold">
+                          Order #{o.id.slice(-6).toUpperCase()}
+                        </p>
+                        <p className="mt-0.5 text-xs text-slate-400">
+                          {new Date(o.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                          {" · "}
+                          {o.itemCount} {o.itemCount === 1 ? "item" : "items"}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold">
+                          {formatPrice(o.totalCents)}
+                        </p>
+                        <StatusBadge status={o.status} />
+                      </div>
+                    </Link>
+                  </li>
                 ))}
-              </div>
-              <div className="mt-3 flex justify-between text-[10px] text-slate-500">
-                <span>M</span>
-                <span>T</span>
-                <span>W</span>
-                <span>T</span>
-                <span>F</span>
-                <span>S</span>
-                <span>S</span>
-              </div>
-            </div>
+              </ul>
+            )}
 
-            <div className="rounded-[28px] border border-slate-100 bg-white p-5 shadow-sm">
-              <h3 className="font-bold">Recent purchase</h3>
-              <div className="mt-4 flex items-center gap-4">
-                <div className="grid h-16 w-16 place-items-center rounded-2xl bg-violet-50 text-3xl">
-                  🎧
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold">Wireless Headphones</p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Delivered yesterday
-                  </p>
-                </div>
-                <p className="font-bold">$129</p>
-              </div>
-              <button className="mt-5 w-full rounded-2xl bg-slate-900 py-3 text-sm font-semibold text-white transition hover:bg-violet-600">
-                Track order
-              </button>
-            </div>
-          </aside>
-        </section>
-
-        <nav
-          aria-label="Products pagination"
-          className="mt-7 flex items-center justify-center gap-4"
-        >
-          {currentPage > 1 ? (
             <Link
-              href={`/dashboard?page=${currentPage - 1}`}
-              className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-violet-300 hover:text-violet-600"
+              href="/orders"
+              className="mt-5 block w-full rounded-2xl bg-slate-900 py-3 text-center text-sm font-semibold text-white transition hover:bg-violet-600"
             >
-              ← Previous
+              View all orders
             </Link>
-          ) : (
-            <button
-              disabled
-              className="cursor-not-allowed rounded-2xl border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-400"
-            >
-              ← Previous
-            </button>
-          )}
+          </div>
+        </aside>
+      </section>
 
-          <span className="text-sm font-medium text-slate-500">
-            Page {currentPage} of {totalPages}
+      {/* Pagination */}
+      <nav
+        aria-label="Products pagination"
+        className="mt-7 flex items-center justify-center gap-4"
+      >
+        {currentPage > 1 ? (
+          <Link
+            href={`/dashboard?page=${currentPage - 1}`}
+            className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-violet-300 hover:text-violet-600"
+          >
+            ← Previous
+          </Link>
+        ) : (
+          <span className="cursor-not-allowed rounded-2xl border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-400">
+            ← Previous
           </span>
+        )}
 
-          {currentPage < totalPages ? (
-            <Link
-              href={`/dashboard?page=${currentPage + 1}`}
-              className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-violet-300 hover:text-violet-600"
-            >
-              Next →
-            </Link>
-          ) : (
-            <button
-              disabled
-              className="cursor-not-allowed rounded-2xl border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-400"
-            >
-              Next →
-            </button>
-          )}
-        </nav>
-      </div>
-    </main>
+        <span className="text-sm font-medium text-slate-500">
+          Page {currentPage} of {totalPages}
+        </span>
+
+        {currentPage < totalPages ? (
+          <Link
+            href={`/dashboard?page=${currentPage + 1}`}
+            className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-violet-300 hover:text-violet-600"
+          >
+            Next →
+          </Link>
+        ) : (
+          <span className="cursor-not-allowed rounded-2xl border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-400">
+            Next →
+          </span>
+        )}
+      </nav>
+    </div>
   );
-};
-
-export default page;
+}

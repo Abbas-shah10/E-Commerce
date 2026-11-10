@@ -30,8 +30,6 @@ export async function addToCartAction(productId: string) {
       user: session.user.id,
       items: [{ product: product._id, quantity: 1 }],
     });
-
-    return { success: true, message: "Cart created successfully" };
   }
 
   const existingItem = cart?.items?.find(

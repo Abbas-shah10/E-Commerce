@@ -20,6 +20,8 @@ export default function QuantityControl({ productId, quantity, stock }: Props) {
   const button =
     "grid h-8 w-8 place-items-center rounded-lg border border-slate-300 text-lg disabled:cursor-not-allowed disabled:opacity-40";
 
+  console.log("quantity", quantity);
+
   return (
     <div>
       <div className="flex items-center gap-3">

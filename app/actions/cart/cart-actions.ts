@@ -101,13 +101,18 @@ export async function updateCartQuantityAction(
     return { error: "Cart not found" };
   }
 
-  const item = await cart.items.find(
+  const item = cart.items.find(
     (i) => i.product?.toString() === product._id?.toString(),
   );
 
   if (!item) return { error: "Item is not in your cart" };
 
   item.quantity = quantity;
+
+  cart.markModified("items");
+  await cart.save();
+
+  revalidatePath("/", "layout");
 
   return { success: true };
 }

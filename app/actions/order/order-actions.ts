@@ -4,6 +4,8 @@ import Order from "@/models/Order";
 import Cart from "@/models/Cart";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+import { requireAdmin } from "@/lib/guards";
+import { revalidatePath } from "next/cache";
 
 type PopulatedProduct = {
   _id: unknown;
@@ -63,4 +65,39 @@ export async function createOrderAction() {
     totalCents,
   });
   return { success: true, orderId: String(order._id) };
+}
+
+const ALLOWED: Record<string, string[]> = {
+  pending: ["paid", "cancelled"],
+  paid: ["shipped", "cancelled"],
+  shipped: ["delivered"],
+  delivered: [],
+  cancelled: [],
+};
+
+export async function updateOrderStatusAction(
+  orderId: string,
+  newStatus: string,
+) {
+  await requireAdmin();
+
+  await connectDB();
+
+  const order = await Order.findById(orderId);
+
+  if (!order) return { error: "Order not found" };
+
+  if (!ALLOWED[order.status]?.includes(newStatus)) {
+    return { error: `Cannot change ${order.status} to ${newStatus}` };
+  }
+
+  order.status = newStatus;
+  if (newStatus === "paid") order.paidAt = new Date();
+
+  await order.save();
+
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
+
+  return { success: true };
 }

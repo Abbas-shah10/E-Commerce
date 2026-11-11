@@ -17,6 +17,14 @@ function formatDate(date?: Date) {
     : "—";
 }
 
+const STATUS_MESSAGES: Record<string, string> = {
+  pending: "Waiting for payment. Your items are not reserved yet.",
+  paid: "Payment received. We are preparing your order.",
+  shipped: "Your order is on its way.",
+  delivered: "Your order has been delivered. Thank you!",
+  cancelled: "This order was cancelled.",
+};
+
 const page = async ({ params }: { params: Promise<{ id: string }> }) => {
   const user = await requireUser();
   const { id } = await params;
@@ -32,6 +40,10 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
       <Link className="text-sm text-blue-600" href={`/orders`}>
         ← Back to orders
       </Link>
+
+      <p className="rounded-lg border bg-white p-4 text-sm text-slate-600">
+        {STATUS_MESSAGES[order.status] ?? ""}
+      </p>
 
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">

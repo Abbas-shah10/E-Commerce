@@ -1,4 +1,3 @@
-// app/(public)/products/page.tsx
 import { connectDB } from "@/lib/db";
 import Product from "@/models/Product";
 import ProductGrid from "@/components/products/ProductGrid";

@@ -54,7 +54,9 @@ const AdminProductsPage = async () => {
                         Edit
                       </Link>
                       <form action={deleteProduct.bind(null, id)}>
-                        <button className="text-red-600">Delete</button>
+                        <button className="text-red-600 hover:text-red-400 cursor-pointer">
+                          Delete
+                        </button>
                       </form>
                     </td>
                   </tr>

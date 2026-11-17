@@ -15,7 +15,7 @@ export default function QuickAddButton({ productId, title, disabled }: Props) {
       const result = await addToCartAction(productId);
       if ("error" in result) {
         setStatus("error");
-        setMessage(result.error);
+        setMessage(result.error ?? "Could not add product to cart.");
       } else {
         setStatus("added");
         setMessage("Added to cart");

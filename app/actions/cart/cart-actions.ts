@@ -34,7 +34,8 @@ export async function addToCartAction(productId: string) {
   }
 
   const existingItem = cart?.items?.find(
-    (item) => item.product?.toString() === product?._id?.toString(),
+    (item: { product?: { toString(): string } | string | null }) =>
+      item.product?.toString() === product?._id?.toString(),
   );
 
   if (existingItem) {
@@ -102,7 +103,8 @@ export async function updateCartQuantityAction(
   }
 
   const item = cart.items.find(
-    (i) => i.product?.toString() === product._id?.toString(),
+    (i: { product?: { toString(): string } | string | null }) =>
+      i.product?.toString() === product._id?.toString(),
   );
 
   if (!item) return { error: "Item is not in your cart" };

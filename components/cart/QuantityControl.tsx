@@ -13,7 +13,8 @@ export default function QuantityControl({ productId, quantity, stock }: Props) {
     setError(null);
     startTransition(async () => {
       const result = await updateCartQuantityAction(productId, newQuantity);
-      if ("error" in result) setError(result?.error);
+      if ("error" in result)
+        setError(result?.error ?? "Could not update the quantity of cart");
     });
   }
 

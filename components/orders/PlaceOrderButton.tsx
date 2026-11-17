@@ -14,7 +14,7 @@ export default function PlaceOrderButton({ disabled }: { disabled?: boolean }) {
     startTransition(async () => {
       const result = await createOrderAction();
       if ("error" in result) {
-        setError(result.error);
+        setError(result.error ?? "Could not create new Order");
         return;
       }
       router.push("/orders"); // later: `/orders/${result.orderId}`

@@ -34,7 +34,7 @@ export default function AddToCartButton({
       const result = await addToCartAction(productId);
 
       if ("error" in result) {
-        setMessage({ type: "error", text: result.error });
+        setMessage({ type: "error", text: result.error ?? "Failed to add to cart" });
       } else {
         setMessage({ type: "success", text: "Added to cart" });
       }

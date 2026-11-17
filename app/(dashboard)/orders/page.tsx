@@ -20,7 +20,7 @@ export default async function OrdersPage() {
     status: order.status,
     createdAt: new Date(order.createdAt).toISOString(),
     itemCount: order.items.reduce(
-      (sum: number, item) => sum + item.quantity,
+      (sum: number, item: { quantity: number }) => sum + item.quantity,
       0,
     ),
     totalCents: order.totalCents,

@@ -116,42 +116,51 @@ const UsersPage = async ({ searchParams }: PageProps) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div>
-                          <p className="font-medium text-start text-gray-900">
-                            {user.username}
-                          </p>
-                          <p className="mt-0.5 text-xs text-gray-500">
-                            {user.email}
-                          </p>
+                {users.map(
+                  (user: {
+                    id: string;
+                    _id: string;
+                    username: string;
+                    email: string;
+                    role: string;
+                    createdAt: string | Date;
+                  }) => (
+                    <tr key={user.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div>
+                            <p className="font-medium text-start text-gray-900">
+                              {user.username}
+                            </p>
+                            <p className="mt-0.5 text-xs text-gray-500">
+                              {user.email}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">{user.role}</td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                          user.role === "admin"
-                            ? "bg-green-50 text-green-700"
-                            : user.role === "user"
-                              ? "bg-yellow-50 text-yellow-700"
-                              : "bg-gray-100 text-gray-600"
-                        }`}
-                      >
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-500">
-                      {formatDateTime(user.createdAt)}
-                    </td>
-                    <td className="absolute right-12 px-6 py-4 text-right">
-                      <UserActionsMenu userId={user._id} />
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">{user.role}</td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+                            user.role === "admin"
+                              ? "bg-green-50 text-green-700"
+                              : user.role === "user"
+                                ? "bg-yellow-50 text-yellow-700"
+                                : "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-gray-500">
+                        {formatDateTime(user.createdAt)}
+                      </td>
+                      <td className="absolute right-12 px-6 py-4 text-right">
+                        <UserActionsMenu userId={user._id} />
+                      </td>
+                    </tr>
+                  ),
+                )}
                 {users.length === 0 && (
                   <tr>
                     <td
